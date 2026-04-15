@@ -1,5 +1,5 @@
 export interface ArticleVideo {
-  /** public/ からの絶対パス (例: "/videos/paper-crane-1.mp4") */
+  /** public/ からの絶対パス (例: "/videos/paper-crane-1.mov") */
   src: string;
   /** CSS aspect-ratio (例: "16 / 9", "21 / 9", "2 / 1")。既定 "16 / 9"。 */
   aspect?: string;
@@ -38,8 +38,8 @@ export const ARTICLES: ArticleData[] = [
     motif: "crane",
     color: "#B5564A",
     videos: [
-      { src: "/videos/paper-crane-1.mp4", aspect: "16 / 9" },
-      { src: "/videos/paper-crane-2.mp4", aspect: "21 / 9" },
+      { src: "/videos/paper-crane-1.mov", aspect: "16 / 9" },
+      { src: "/videos/paper-crane-2.mov", aspect: "21 / 9" },
     ],
   },
   {
@@ -49,8 +49,8 @@ export const ARTICLES: ArticleData[] = [
     motif: "tram",
     color: "#4A6B5E",
     videos: [
-      { src: "/videos/tram-silence-1.mp4", aspect: "16 / 9" },
-      { src: "/videos/tram-silence-2.mp4", aspect: "21 / 9" },
+      { src: "/videos/tram-silence-1.mov", aspect: "16 / 9" },
+      { src: "/videos/tram-silence-2.mov", aspect: "21 / 9" },
     ],
   },
   {
@@ -60,8 +60,8 @@ export const ARTICLES: ArticleData[] = [
     motif: "torii",
     color: "#C4563A",
     videos: [
-      { src: "/videos/floating-torii-1.mp4", aspect: "16 / 9" },
-      { src: "/videos/floating-torii-2.mp4", aspect: "21 / 9" },
+      { src: "/videos/floating-torii-1.mov", aspect: "16 / 9" },
+      { src: "/videos/floating-torii-2.mov", aspect: "21 / 9" },
     ],
   },
   {
@@ -71,8 +71,8 @@ export const ARTICLES: ArticleData[] = [
     motif: "deer",
     color: "#8B7355",
     videos: [
-      { src: "/videos/deer-island-1.mp4", aspect: "16 / 9" },
-      { src: "/videos/deer-island-2.mp4", aspect: "21 / 9" },
+      { src: "/videos/deer-island-1.mov", aspect: "16 / 9" },
+      { src: "/videos/deer-island-2.mov", aspect: "21 / 9" },
     ],
   },
   {
@@ -82,8 +82,8 @@ export const ARTICLES: ArticleData[] = [
     motif: "maple",
     color: "#C4443A",
     videos: [
-      { src: "/videos/autumn-leaf-1.mp4", aspect: "16 / 9" },
-      { src: "/videos/autumn-leaf-2.mp4", aspect: "21 / 9" },
+      { src: "/videos/autumn-leaf-1.mov", aspect: "16 / 9" },
+      { src: "/videos/autumn-leaf-2.mov", aspect: "21 / 9" },
     ],
   },
   {
@@ -93,8 +93,8 @@ export const ARTICLES: ArticleData[] = [
     motif: "oyster",
     color: "#7A8B8E",
     videos: [
-      { src: "/videos/oyster-morning-1.mp4", aspect: "16 / 9" },
-      { src: "/videos/oyster-morning-2.mp4", aspect: "21 / 9" },
+      { src: "/videos/oyster-morning-1.mov", aspect: "16 / 9" },
+      { src: "/videos/oyster-morning-2.mov", aspect: "21 / 9" },
     ],
   },
   {
@@ -104,8 +104,8 @@ export const ARTICLES: ArticleData[] = [
     motif: "bridge",
     color: "#5A6A7A",
     videos: [
-      { src: "/videos/bridge-count-1.mp4", aspect: "16 / 9" },
-      { src: "/videos/bridge-count-2.mp4", aspect: "21 / 9" },
+      { src: "/videos/bridge-count-1.mov", aspect: "16 / 9" },
+      { src: "/videos/bridge-count-2.mov", aspect: "21 / 9" },
     ],
   },
   {
@@ -115,8 +115,8 @@ export const ARTICLES: ArticleData[] = [
     motif: "flame",
     color: "#D4A245",
     videos: [
-      { src: "/videos/eternal-flame-1.mp4", aspect: "16 / 9" },
-      { src: "/videos/eternal-flame-2.mp4", aspect: "21 / 9" },
+      { src: "/videos/eternal-flame-1.mov", aspect: "16 / 9" },
+      { src: "/videos/eternal-flame-2.mov", aspect: "21 / 9" },
     ],
   },
   {
@@ -126,8 +126,8 @@ export const ARTICLES: ArticleData[] = [
     motif: "spatula",
     color: "#6B5A45",
     videos: [
-      { src: "/videos/iron-spatula-1.mp4", aspect: "16 / 9" },
-      { src: "/videos/iron-spatula-2.mp4", aspect: "21 / 9" },
+      { src: "/videos/iron-spatula-1.mov", aspect: "16 / 9" },
+      { src: "/videos/iron-spatula-2.mov", aspect: "21 / 9" },
     ],
   },
   {
@@ -137,8 +137,8 @@ export const ARTICLES: ArticleData[] = [
     motif: "ferry",
     color: "#4A6580",
     videos: [
-      { src: "/videos/island-ferry-1.mp4", aspect: "16 / 9" },
-      { src: "/videos/island-ferry-2.mp4", aspect: "21 / 9" },
+      { src: "/videos/island-ferry-1.mov", aspect: "16 / 9" },
+      { src: "/videos/island-ferry-2.mov", aspect: "21 / 9" },
     ],
   },
 ];
