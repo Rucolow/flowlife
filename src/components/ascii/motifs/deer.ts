@@ -92,19 +92,18 @@ export const deer: MotifFunction = (nx, ny, time) => {
   brightness = Math.max(brightness, sdfToBrightness(rightEar, 0.01, 7));
 
   /* --- 角（枝分かれ）--- */
-  // 主幹
   const antlerBaseX = headCX + 0.005;
   const antlerBaseY = headCY - 0.035;
   const antlerSeg = [
-    sdSegment(x, y, antlerBaseX, antlerBaseY, antlerBaseX + 0.02, antlerBaseY - 0.05, 0.003),
-    sdSegment(x, y, antlerBaseX + 0.02, antlerBaseY - 0.05, antlerBaseX + 0.05, antlerBaseY - 0.08, 0.003),
-    sdSegment(x, y, antlerBaseX + 0.02, antlerBaseY - 0.05, antlerBaseX + 0.005, antlerBaseY - 0.09, 0.0025),
-    sdSegment(x, y, antlerBaseX + 0.04, antlerBaseY - 0.07, antlerBaseX + 0.06, antlerBaseY - 0.1, 0.0025),
-    sdSegment(x, y, antlerBaseX, antlerBaseY, antlerBaseX - 0.015, antlerBaseY - 0.055, 0.0025),
-    sdSegment(x, y, antlerBaseX - 0.015, antlerBaseY - 0.055, antlerBaseX - 0.03, antlerBaseY - 0.085, 0.002),
+    sdSegment(x, y, antlerBaseX, antlerBaseY, antlerBaseX + 0.025, antlerBaseY - 0.06, 0.006),
+    sdSegment(x, y, antlerBaseX + 0.025, antlerBaseY - 0.06, antlerBaseX + 0.06, antlerBaseY - 0.095, 0.006),
+    sdSegment(x, y, antlerBaseX + 0.025, antlerBaseY - 0.06, antlerBaseX + 0.005, antlerBaseY - 0.1, 0.005),
+    sdSegment(x, y, antlerBaseX + 0.045, antlerBaseY - 0.08, antlerBaseX + 0.075, antlerBaseY - 0.11, 0.005),
+    sdSegment(x, y, antlerBaseX, antlerBaseY, antlerBaseX - 0.02, antlerBaseY - 0.065, 0.005),
+    sdSegment(x, y, antlerBaseX - 0.02, antlerBaseY - 0.065, antlerBaseX - 0.04, antlerBaseY - 0.095, 0.004),
   ];
   const antlerD = Math.min(...antlerSeg);
-  brightness = Math.max(brightness, sdfToBrightness(antlerD, 0.006, 10));
+  brightness = Math.max(brightness, sdfToBrightness(antlerD, 0.008, 10));
 
   /* --- 脚（4本） --- */
   const legY1 = 0.55 + 0.07; // 脚の上端

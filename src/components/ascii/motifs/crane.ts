@@ -75,8 +75,8 @@ function sdTriangle(
 
 function sdfToBrightness(d: number, edge: number, depthScale: number): number {
   if (d > edge) return 0;
-  if (d > 0) return (1 - d / edge) * 0.3;
-  return Math.min(1, 0.3 + Math.abs(d) * depthScale * 0.7);
+  if (d > 0) return (1 - d / edge) * 0.45;
+  return Math.min(0.95, 0.55 + Math.abs(d) * depthScale * 0.5);
 }
 
 /* ---------- Origami crane ---------- */

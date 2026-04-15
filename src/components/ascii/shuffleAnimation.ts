@@ -92,7 +92,7 @@ function sampleCardParticles(
     colorRGB: string;
   }> = [];
 
-  const cellSize = isMobile() ? 9 : 7; // card mode
+  const cellSize = isMobile() ? 7 : 5; // card mode — matches AsciiCanvas MODE_CONFIG
   const cw = cellSize;
   const ch = cellSize * 1.6;
   const cols = Math.max(1, Math.floor(rect.width / cw));
@@ -115,9 +115,8 @@ function sampleCardParticles(
       const charIdx = Math.floor(br * (CHARS.length - 1));
       if (charIdx <= 0) continue;
       const char = CHARS[charIdx];
-      // Keep in sync with AsciiCanvas: alpha = 0.1 + br * 0.9.
-      const alpha = 0.1 + br * 0.9;
-      if (alpha <= 0.02) continue;
+      // Keep in sync with AsciiCanvas: alpha = 0.35 + br * 0.6.
+      const alpha = 0.35 + br * 0.6;
       out.push({
         char,
         pageX: rect.left + xi * cw + cw / 2,
