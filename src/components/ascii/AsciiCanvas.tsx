@@ -25,17 +25,17 @@ interface ModeConfig {
 const MODE_CONFIG: Record<"card" | "hero", ModeConfig> = {
   card: {
     fps: 15,
-    resolutionScale: 0.5,
-    cellSize: 7,
-    cellSizeMobile: 9,
+    resolutionScale: 0.6,
+    cellSize: 5,
+    cellSizeMobile: 7,
     visibilityThreshold: 0.05,
     mouseTracking: false,
   },
   hero: {
     fps: 60,
     resolutionScale: 0.75,
-    cellSize: 9,
-    cellSizeMobile: 11,
+    cellSize: 6,
+    cellSizeMobile: 8,
     visibilityThreshold: 0.1,
     mouseTracking: true,
   },
@@ -159,9 +159,11 @@ export default function AsciiCanvas({
           const charIdx = Math.floor(b * (CHARS.length - 1));
           if (charIdx <= 0) continue;
           const ch2 = CHARS[charIdx];
-          const intensity = b * b;
-          const alpha = (0.1 + b * 0.9) * intensity;
-          if (alpha <= 0.01) continue;
+          // brightness をそのままアルファに使う:
+          //  motif が 0 を返したセルは上で reject 済み。
+          //  0.5 (エッジ) → α 0.5、0.9 (内部 SOLID) → α 0.9
+          const alpha = b;
+          if (alpha <= 0.05) continue;
           ctx.fillStyle = `rgba(${baseR},${baseG},${baseB},${alpha.toFixed(3)})`;
           ctx.fillText(ch2, x * cw + cw / 2, y * ch + ch / 2);
         }
