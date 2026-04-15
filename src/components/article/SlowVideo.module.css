@@ -7,43 +7,82 @@
   filter: brightness(0.95);
 
   /*
-   * 四辺をフェザーして記事と映像の境界を曖昧にする。
-   * 上下方向を強めにフェード（文字と隣接するため）、
-   * 左右は控えめ（bleed を生かす）。
-   * 2枚のマスクを重ねて交差部分だけが不透明になる。
+   * 四辺を smoothstep カーブでフェードし、記事と映像の境界を曖昧にする。
+   * 単純な linear-gradient は「透明→不透明→プラトー」の折れ目が可視化して
+   * しまうため、多段ストップで S 字カーブを作り、両端で傾きが 0 になるよう
+   * にしている（Mach band 対策）。
+   *
+   * 上下方向 (--fade-v): 段落と接するため強めにフェード
+   * 左右方向 (--fade-h): bleed を活かすため控えめ
+   * 2 枚のマスクを mask-composite: intersect で重ねる → 両方が不透明な
+   * 領域だけが完全表示される。
    */
-  --fade-v: 14%;
-  --fade-h: 8%;
   -webkit-mask-image:
     linear-gradient(
       to bottom,
-      transparent 0%,
-      #000 var(--fade-v),
-      #000 calc(100% - var(--fade-v)),
-      transparent 100%
+      rgba(0, 0, 0, 0)     0%,
+      rgba(0, 0, 0, 0.028) 4%,
+      rgba(0, 0, 0, 0.104) 8%,
+      rgba(0, 0, 0, 0.352) 14%,
+      rgba(0, 0, 0, 0.648) 18%,
+      rgba(0, 0, 0, 0.896) 22%,
+      rgba(0, 0, 0, 1)     28%,
+      rgba(0, 0, 0, 1)     72%,
+      rgba(0, 0, 0, 0.896) 78%,
+      rgba(0, 0, 0, 0.648) 82%,
+      rgba(0, 0, 0, 0.352) 86%,
+      rgba(0, 0, 0, 0.104) 92%,
+      rgba(0, 0, 0, 0.028) 96%,
+      rgba(0, 0, 0, 0)     100%
     ),
     linear-gradient(
       to right,
-      transparent 0%,
-      #000 var(--fade-h),
-      #000 calc(100% - var(--fade-h)),
-      transparent 100%
+      rgba(0, 0, 0, 0)     0%,
+      rgba(0, 0, 0, 0.028) 2%,
+      rgba(0, 0, 0, 0.216) 5%,
+      rgba(0, 0, 0, 0.648) 9%,
+      rgba(0, 0, 0, 0.972) 13%,
+      rgba(0, 0, 0, 1)     17%,
+      rgba(0, 0, 0, 1)     83%,
+      rgba(0, 0, 0, 0.972) 87%,
+      rgba(0, 0, 0, 0.648) 91%,
+      rgba(0, 0, 0, 0.216) 95%,
+      rgba(0, 0, 0, 0.028) 98%,
+      rgba(0, 0, 0, 0)     100%
     );
   -webkit-mask-composite: source-in;
   mask-image:
     linear-gradient(
       to bottom,
-      transparent 0%,
-      #000 var(--fade-v),
-      #000 calc(100% - var(--fade-v)),
-      transparent 100%
+      rgba(0, 0, 0, 0)     0%,
+      rgba(0, 0, 0, 0.028) 4%,
+      rgba(0, 0, 0, 0.104) 8%,
+      rgba(0, 0, 0, 0.352) 14%,
+      rgba(0, 0, 0, 0.648) 18%,
+      rgba(0, 0, 0, 0.896) 22%,
+      rgba(0, 0, 0, 1)     28%,
+      rgba(0, 0, 0, 1)     72%,
+      rgba(0, 0, 0, 0.896) 78%,
+      rgba(0, 0, 0, 0.648) 82%,
+      rgba(0, 0, 0, 0.352) 86%,
+      rgba(0, 0, 0, 0.104) 92%,
+      rgba(0, 0, 0, 0.028) 96%,
+      rgba(0, 0, 0, 0)     100%
     ),
     linear-gradient(
       to right,
-      transparent 0%,
-      #000 var(--fade-h),
-      #000 calc(100% - var(--fade-h)),
-      transparent 100%
+      rgba(0, 0, 0, 0)     0%,
+      rgba(0, 0, 0, 0.028) 2%,
+      rgba(0, 0, 0, 0.216) 5%,
+      rgba(0, 0, 0, 0.648) 9%,
+      rgba(0, 0, 0, 0.972) 13%,
+      rgba(0, 0, 0, 1)     17%,
+      rgba(0, 0, 0, 1)     83%,
+      rgba(0, 0, 0, 0.972) 87%,
+      rgba(0, 0, 0, 0.648) 91%,
+      rgba(0, 0, 0, 0.216) 95%,
+      rgba(0, 0, 0, 0.028) 98%,
+      rgba(0, 0, 0, 0)     100%
     );
   mask-composite: intersect;
 }
@@ -78,7 +117,5 @@
     width: calc(100% + 2 * 12px);
     margin-left: -12px;
     margin-right: -12px;
-    --fade-v: 12%;
-    --fade-h: 6%;
   }
 }
