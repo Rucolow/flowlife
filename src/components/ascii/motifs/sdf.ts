@@ -132,21 +132,25 @@ export function sdTriangle(
 
 /**
  * SDFの距離値を明度(0-1)に変換する。
- * - d > edge       : 0 （形の外）
- * - 0 < d <= edge  : 0〜0.45 のシャープなエッジ帯
- * - d <= 0         : 0.55〜0.95 の内部（中心ほど濃い）
+ * 段階化された4レベルで、ASCII の文字階調と相性が良い:
+ *   d > 0.01   : 0    （形の外。描画しない）
+ *   d > -0.005 : 0.3  （エッジ。細い輪郭）
+ *   d > -0.03  : 0.6  （外縁部。中程度）
+ *   それ以下   : 0.85 （内部。はっきり）
  *
- * 目的: エッジは薄くぼかすのではなく「形の輪郭」として即座に見せ、
- * 内部は最初から十分明るい値域を使って骨格が読み取れるようにする。
+ * edge / depthScale は互換性のため残してあるが、現在は無視される。
  */
 export function sdfToBrightness(
   d: number,
-  edge: number,
-  depthScale: number,
+  _edge?: number,
+  _depthScale?: number,
 ): number {
-  if (d > edge) return 0;
-  if (d > 0) return (1 - d / edge) * 0.45;
-  return Math.min(0.95, 0.55 + Math.abs(d) * depthScale * 0.5);
+  void _edge;
+  void _depthScale;
+  if (d > 0.01) return 0;
+  if (d > -0.005) return 0.3;
+  if (d > -0.03) return 0.6;
+  return 0.85;
 }
 
 export function opUnion(a: number, b: number): number {

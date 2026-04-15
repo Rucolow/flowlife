@@ -35,7 +35,7 @@ export const maple: MotifFunction = (nx, ny, time) => {
   const y = dx * sinA + dy * cosA;
 
   const r = Math.sqrt(x * x + y * y);
-  if (r > 0.42) return 0;
+  if (r > 0.48) return 0;
 
   // atan2(y, x): +X = 0, +Y(下) = π/2, -Y(上) = -π/2
   const ang = Math.atan2(y, x);
@@ -46,11 +46,11 @@ export const maple: MotifFunction = (nx, ny, time) => {
   const UP = -Math.PI / 2;
   type Lobe = { ang: number; maxR: number; halfWidth: number };
   const lobes: Lobe[] = [
-    { ang: UP,              maxR: 0.4,  halfWidth: 28 * DEG }, // 中央（最大）
-    { ang: UP - 55 * DEG,   maxR: 0.36, halfWidth: 26 * DEG }, // 上左
-    { ang: UP + 55 * DEG,   maxR: 0.36, halfWidth: 26 * DEG }, // 上右
-    { ang: UP - 115 * DEG,  maxR: 0.26, halfWidth: 22 * DEG }, // 下左
-    { ang: UP + 115 * DEG,  maxR: 0.26, halfWidth: 22 * DEG }, // 下右
+    { ang: UP,              maxR: 0.46, halfWidth: 30 * DEG }, // 中央（最大）
+    { ang: UP - 55 * DEG,   maxR: 0.42, halfWidth: 28 * DEG }, // 上左
+    { ang: UP + 55 * DEG,   maxR: 0.42, halfWidth: 28 * DEG }, // 上右
+    { ang: UP - 115 * DEG,  maxR: 0.30, halfWidth: 24 * DEG }, // 下左
+    { ang: UP + 115 * DEG,  maxR: 0.30, halfWidth: 24 * DEG }, // 下右
   ];
 
   let brightness = 0;

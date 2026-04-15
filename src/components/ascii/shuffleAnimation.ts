@@ -115,8 +115,9 @@ function sampleCardParticles(
       const charIdx = Math.floor(br * (CHARS.length - 1));
       if (charIdx <= 0) continue;
       const char = CHARS[charIdx];
-      // Keep in sync with AsciiCanvas: alpha = 0.35 + br * 0.6.
-      const alpha = 0.35 + br * 0.6;
+      // Keep in sync with AsciiCanvas: alpha = br * 0.9.
+      const alpha = br * 0.9;
+      if (alpha <= 0.02) continue;
       out.push({
         char,
         pageX: rect.left + xi * cw + cw / 2,

@@ -4,118 +4,124 @@ import { sdBox, sdCircle, sdRoundBox, sdSegment, sdfToBrightness } from "./sdf";
 /* ---------- Hiroden tram ---------- */
 
 /**
- * 広島電鉄の車両を横から見たシルエット。
- * 左から右へゆっくり横移動し、右端で消えたら左端から再出現する。
- * 周期18秒。
+ * 広島電鉄の車両を横から見たシルエット。横幅 65%。
  *
- * 構成:
- * - 車体: 角丸矩形。等間隔の窓
- * - パンタグラフ: 車体上の菱形、わずかに上下する
- * - 車輪: 下部に2組。内部スポークが回転
- * - 線路: 最下部の細い水平線
+ * レイアウト（休止中央位置）:
+ *   車体（角丸）   : 中心 (0.5, 0.55), hw=0.325, hh=0.13
+ *   窓 5 枚        : 車体内部、等間隔
+ *   パンタグラフ   : 車体上の菱形 + 垂直棒
+ *   架線           : 上部 y=0.20 の薄い水平線
+ *   車輪 2 組      : 下部、スポーク回転
+ *   線路           : 最下部
+ *
+ * 動き:
+ *   - 車体が周期 18s で左 → 右へ横移動（端で循環）
+ *   - 車輪はスポークが移動量と同期して回転
  */
 export const tram: MotifFunction = (nx, ny, time) => {
-  // 横移動（周期18秒）。 -0.4 〜 1.4 の範囲を往復せず、一方向ループ。
-  const travel = (time / 18) % 1;
-  const tramCX = -0.3 + travel * 1.6;
-
   const x = nx;
   const y = ny;
 
-  // 線路（常時表示）
-  const rail = sdSegment(x, y, 0, 0.82, 1, 0.82, 0.003);
-  let brightness = sdfToBrightness(rail, 0.006, 10) * 0.45;
+  // 横移動 (-0.55 〜 +0.55 を 18s 周期で循環)
+  const travel = (time / 18) % 1;
+  const offset = -0.55 + travel * 1.10;
 
-  // 車体の水平位置に基づいて早期 reject
-  const localX = x - tramCX;
-  if (localX < -0.32 || localX > 0.32) return brightness;
+  let b = 0;
 
+  /* --- 線路 --- */
+  const rail = sdSegment(x, y, 0, 0.86, 1, 0.86, 0.004);
+  if (rail < 0.004) b = Math.max(b, 0.5);
+
+  /* --- 架線 --- */
+  const wire = sdSegment(x, y, 0, 0.20, 1, 0.20, 0.0025);
+  if (wire < 0.003) b = Math.max(b, 0.4);
+
+  /* --- 車体（角丸矩形）--- */
+  const bodyCX = 0.5 + offset;
   const bodyCY = 0.55;
+  const bodyHW = 0.325;
+  const bodyHH = 0.13;
 
-  // パンタグラフの上下（周期3秒）
-  const pantoBob = Math.sin(time * 2.1) * 0.005;
+  // 早期 reject
+  const localX = x - bodyCX;
+  if (localX > -0.36 && localX < 0.36) {
+    const body = sdRoundBox(x, y, bodyCX, bodyCY, bodyHW, bodyHH, 0.04);
+    b = Math.max(b, sdfToBrightness(body));
 
-  // --- 車体（角丸矩形）---
-  const body = sdRoundBox(x, y, tramCX, bodyCY, 0.28, 0.13, 0.03);
-  const bodyB = sdfToBrightness(body, 0.014, 5);
-  brightness = Math.max(brightness, bodyB);
-
-  // --- 窓（等間隔、車体内部）---
-  if (body <= 0) {
-    // 5枚窓
-    const WINDOWS = 5;
-    const winHW = 0.032;
-    const winHH = 0.045;
-    const winSpan = 0.22;
-    let winB = 0;
-    for (let i = 0; i < WINDOWS; i++) {
-      const wcx = tramCX - winSpan / 2 + (winSpan / (WINDOWS - 1)) * i;
-      const wd = sdBox(x, y, wcx, bodyCY - 0.01, winHW, winHH);
-      if (wd <= 0) {
-        // 窓内は背景を覗かせるように少し暗くする（描画しない領域寄せ）
-        // ただし完全に透明にはせず、窓の中に影を残す
-        const t2 = (time * 0.6 + i * 0.7) % 1;
-        const shadeX = wcx - winHW + t2 * (winHW * 2);
-        const shadeDist = Math.abs(x - shadeX);
-        if (shadeDist < 0.008) {
-          winB = Math.max(winB, (1 - shadeDist / 0.008) * 0.55);
-        } else {
-          // 窓枠だけ残す（内部は薄く）
-          winB = Math.max(winB, 0.12);
+    /* --- 窓（5 枚、等間隔）--- */
+    if (body <= 0) {
+      const WINDOWS = 5;
+      const winHW = 0.046;
+      const winHH = 0.06;
+      const winSpan = 0.5; // 端から端まで
+      for (let i = 0; i < WINDOWS; i++) {
+        const wcx = bodyCX - winSpan / 2 + (winSpan / (WINDOWS - 1)) * i;
+        const wd = sdBox(x, y, wcx, bodyCY - 0.015, winHW, winHH);
+        if (wd < 0) {
+          // 窓内側は車体より「明るい」(背景色寄り) として明度を引き下げる
+          // 窓を横切る影
+          const t2 = (time * 0.6 + i * 0.7) % 1;
+          const shadeX = wcx - winHW + t2 * (winHW * 2);
+          const shadeDist = Math.abs(x - shadeX);
+          if (shadeDist < 0.01) {
+            // 影は車体相当の濃さ
+            // do nothing — keep body brightness
+          } else {
+            // 窓内 → 明度を 0.3 に押し下げ（明るい窓）
+            b = Math.min(b, 0.3);
+          }
         }
-        // 窓のフレームは元のbody brightnessを残しつつ内部を明確に変える
-        brightness = Math.min(brightness, 0.35 + winB * 0.65);
       }
     }
   }
 
-  // --- パンタグラフ（車体上部の菱形）---
-  const pantoCX = tramCX - 0.05;
-  const pantoCY = 0.38 + pantoBob;
-  const pdx = Math.abs(x - pantoCX) / 0.05;
-  const pdy = Math.abs(y - pantoCY) / 0.03;
-  const pantoDiamond = (pdx + pdy - 1) * 0.03;
-  brightness = Math.max(brightness, sdfToBrightness(pantoDiamond, 0.006, 10));
-  // パンタグラフを車体に繋ぐ垂直棒
-  const pantoPole = sdSegment(x, y, pantoCX, pantoCY + 0.02, pantoCX, bodyCY - 0.13, 0.003);
-  brightness = Math.max(brightness, sdfToBrightness(pantoPole, 0.005, 10));
-  // 架線（ごく薄い水平線）
-  const wire = sdSegment(x, y, 0, 0.33, 1, 0.33, 0.001);
-  brightness = Math.max(brightness, sdfToBrightness(wire, 0.004, 8) * 0.35);
+  /* --- パンタグラフ --- */
+  const pantoBob = Math.sin(time * 2.1) * 0.005;
+  const pCX = bodyCX - 0.08;
+  const pCY = 0.32 + pantoBob;
+  // 菱形
+  const pdx = Math.abs(x - pCX) / 0.06;
+  const pdy = Math.abs(y - pCY) / 0.035;
+  const pantoNorm = pdx + pdy - 1;
+  if (pantoNorm < 0.1) {
+    const pantoD = pantoNorm * 0.035;
+    b = Math.max(b, sdfToBrightness(pantoD));
+  }
+  // 垂直棒
+  const pPole = sdSegment(x, y, pCX, pCY + 0.02, pCX, bodyCY - bodyHH, 0.005);
+  if (pPole < 0.005) b = Math.max(b, sdfToBrightness(pPole));
 
-  // --- 車輪（2組、回転スポーク）---
-  const wheelCYv = 0.75;
-  const wheelR = 0.035;
-  const wheelCenters = [tramCX - 0.17, tramCX + 0.17];
-  // 回転角（車輪の円周 = 2πr、移動距離に比例）
-  const wheelAng = (travel * 1.6) / wheelR; // rad
-  for (const wcx of wheelCenters) {
-    const wd = sdCircle(x, y, wcx, wheelCYv, wheelR);
-    const wB = sdfToBrightness(wd, 0.008, 6);
-    if (wB > 0) {
-      brightness = Math.max(brightness, wB * 0.7);
-      // スポーク（4本）
-      if (wd <= 0) {
+  /* --- 車輪（2 組、スポーク回転）--- */
+  const wheelY = 0.82;
+  const wheelR = 0.045;
+  const wheelXs = [bodyCX - 0.20, bodyCX + 0.20];
+  // 走行に同期した回転角
+  const wheelAng = (travel * 1.10) / wheelR;
+  for (const wcx of wheelXs) {
+    const wd = sdCircle(x, y, wcx, wheelY, wheelR);
+    if (wd < 0.01) {
+      b = Math.max(b, sdfToBrightness(wd));
+      // スポーク
+      if (wd < 0) {
         const dx = x - wcx;
-        const dy = y - wheelCYv;
+        const dy = y - wheelY;
         const r = Math.sqrt(dx * dx + dy * dy);
         const ang = Math.atan2(dy, dx);
         let minSpoke = 1;
         for (let k = 0; k < 4; k++) {
-          const spokeAng = (Math.PI / 2) * k + wheelAng;
-          let diff = Math.abs(ang - spokeAng);
+          const sa = (Math.PI / 2) * k + wheelAng;
+          let diff = Math.abs(ang - sa);
           if (diff > Math.PI) diff = Math.PI * 2 - diff;
           if (diff > Math.PI / 2) diff = Math.PI - diff;
-          const sdist = diff * r;
-          if (sdist < minSpoke) minSpoke = sdist;
+          const sd = diff * r;
+          if (sd < minSpoke) minSpoke = sd;
         }
-        const spokeB = sdfToBrightness(minSpoke - 0.002, 0.005, 10) * 0.8;
-        brightness = Math.max(brightness, spokeB);
+        if (minSpoke < 0.004) b = Math.max(b, 0.85);
       }
     }
   }
 
-  return brightness;
+  return b;
 };
 
 export default tram;

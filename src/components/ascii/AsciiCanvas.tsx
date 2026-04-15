@@ -34,8 +34,8 @@ const MODE_CONFIG: Record<"card" | "hero", ModeConfig> = {
   hero: {
     fps: 60,
     resolutionScale: 0.75,
-    cellSize: 8,
-    cellSizeMobile: 10,
+    cellSize: 6,
+    cellSizeMobile: 8,
     visibilityThreshold: 0.1,
     mouseTracking: true,
   },
@@ -159,9 +159,12 @@ export default function AsciiCanvas({
           const charIdx = Math.floor(b * (CHARS.length - 1));
           if (charIdx <= 0) continue;
           const ch2 = CHARS[charIdx];
-          // 線形アルファ [0.35, 0.95]。
-          // エッジも最低 0.35 で確実に見せ、中心はほぼ baseColor を出す。
-          const alpha = 0.35 + b * 0.6;
+          // シンプルに brightness を alpha にマップ:
+          //  motif が 0 を返したセルは上で reject 済み。
+          //  0.3 (エッジ) → α 0.27、0.6 → α 0.54、0.85 (中心) → α 0.77、
+          //  1.0 (highlight) → α 0.9
+          const alpha = b * 0.9;
+          if (alpha <= 0.02) continue;
           ctx.fillStyle = `rgba(${baseR},${baseG},${baseB},${alpha.toFixed(3)})`;
           ctx.fillText(ch2, x * cw + cw / 2, y * ch + ch / 2);
         }

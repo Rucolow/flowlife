@@ -1,165 +1,96 @@
 import type { MotifFunction } from "./types";
-
-/* ---------- SDF helpers ---------- */
-
-function sdSegment(
-  px: number,
-  py: number,
-  ax: number,
-  ay: number,
-  bx: number,
-  by: number,
-  thickness: number,
-): number {
-  const pax = px - ax;
-  const pay = py - ay;
-  const bax = bx - ax;
-  const bay = by - ay;
-  const denom = bax * bax + bay * bay || 1e-6;
-  const h = Math.max(0, Math.min(1, (pax * bax + pay * bay) / denom));
-  const dx = pax - bax * h;
-  const dy = pay - bay * h;
-  return Math.sqrt(dx * dx + dy * dy) - thickness;
-}
-
-/**
- * 三角形のSDF（符号つき）。内側で負、外側で正。
- */
-function sdTriangle(
-  px: number,
-  py: number,
-  ax: number,
-  ay: number,
-  bx: number,
-  by: number,
-  cx: number,
-  cy: number,
-): number {
-  const e0x = bx - ax;
-  const e0y = by - ay;
-  const e1x = cx - bx;
-  const e1y = cy - by;
-  const e2x = ax - cx;
-  const e2y = ay - cy;
-
-  const v0x = px - ax;
-  const v0y = py - ay;
-  const v1x = px - bx;
-  const v1y = py - by;
-  const v2x = px - cx;
-  const v2y = py - cy;
-
-  const h0 = Math.max(0, Math.min(1, (v0x * e0x + v0y * e0y) / (e0x * e0x + e0y * e0y || 1e-6)));
-  const h1 = Math.max(0, Math.min(1, (v1x * e1x + v1y * e1y) / (e1x * e1x + e1y * e1y || 1e-6)));
-  const h2 = Math.max(0, Math.min(1, (v2x * e2x + v2y * e2y) / (e2x * e2x + e2y * e2y || 1e-6)));
-
-  const p0x = v0x - e0x * h0;
-  const p0y = v0y - e0y * h0;
-  const p1x = v1x - e1x * h1;
-  const p1y = v1y - e1y * h1;
-  const p2x = v2x - e2x * h2;
-  const p2y = v2y - e2y * h2;
-
-  const d0 = p0x * p0x + p0y * p0y;
-  const d1 = p1x * p1x + p1y * p1y;
-  const d2 = p2x * p2x + p2y * p2y;
-
-  const s = Math.sign(e0x * e2y - e0y * e2x);
-  const sd = Math.min(
-    s * (v0x * e0y - v0y * e0x),
-    s * (v1x * e1y - v1y * e1x),
-    s * (v2x * e2y - v2y * e2x),
-  );
-  return -Math.sqrt(Math.min(d0, d1, d2)) * Math.sign(sd);
-}
-
-function sdfToBrightness(d: number, edge: number, depthScale: number): number {
-  if (d > edge) return 0;
-  if (d > 0) return (1 - d / edge) * 0.45;
-  return Math.min(0.95, 0.55 + Math.abs(d) * depthScale * 0.5);
-}
+import { sdSegment, sdTriangle, sdfToBrightness } from "./sdf";
 
 /* ---------- Origami crane ---------- */
 
 /**
- * 折り鶴を斜め上から見たシルエット。翼は上下にゆっくり羽ばたく。
- * 周期4.5秒。全体が左右にほんの少し揺れる（吊り下げ感）。
+ * 折り鶴を斜め上から見たシルエット。横幅キャンバスの 70% を使う。
+ *
+ * レイアウト（休止状態）:
+ *   胴体（菱形）      : 中心 (0.5, 0.5), 半幅 0.10, 半高 0.07
+ *   首 + 頭           : 胴体右上から (0.78, 0.36) へ
+ *   嘴               : (0.86, 0.34) へ短く伸びる
+ *   尾                : 胴体左下から (0.18, 0.62) へ
+ *   左翼              : 胴体 → (0.10, 0.30) の三角
+ *   右翼              : 胴体 → (0.90, 0.28) の三角
+ *
+ * 動き:
+ *   - 周期 4.5s で羽ばたき（翼の y が ±0.06）
+ *   - 周期 15s 程度で吊り下げ感のある左右揺れ
  */
 export const crane: MotifFunction = (nx, ny, time) => {
   const sway = Math.sin(time * 0.4) * 0.012;
   const x = nx - sway;
   const y = ny;
 
-  if (y < 0.22 || y > 0.78) return 0;
+  if (y < 0.18 || y > 0.78) return 0;
 
-  // 羽ばたき位相
+  // 羽ばたき（-1〜+1）
   const flap = Math.sin(time * ((2 * Math.PI) / 4.5));
-  const wingY = 0.52 + flap * 0.06;
-  const wingOpen = 1 + flap * 0.3; // 翼の広がり係数
+  // 翼の中心ベース y。羽ばたきで上下する
+  const wingBaseY = 0.5 + flap * 0.04;
+  // 翼先の y 移動量
+  const wingTipDy = -0.18 + flap * 0.06;
 
-  // --- 胴体（菱形）---
+  /* --- 胴体（大きめの菱形）--- */
   const bodyCX = 0.5;
-  const bodyCY = 0.52 + flap * 0.012;
-  const ddx = x - bodyCX;
-  const ddy = y - bodyCY;
-  // 菱形: |x|/a + |y|/b < 1
-  const diamond = Math.abs(ddx) / 0.07 + Math.abs(ddy) / 0.045 - 1;
-  const body = diamond * Math.min(0.07, 0.045);
+  const bodyCY = 0.5 + flap * 0.012;
+  const bdx = x - bodyCX;
+  const bdy = y - bodyCY;
+  // 菱形 SDF: |x|/a + |y|/b - 1
+  const diamondNorm = Math.abs(bdx) / 0.10 + Math.abs(bdy) / 0.07 - 1;
+  const body = diamondNorm * 0.07;
 
-  // --- 頭と首 ---
-  const neck = sdSegment(x, y, 0.56, 0.48, 0.66, 0.42, 0.008);
-  const headTri = sdTriangle(x, y, 0.63, 0.4, 0.72, 0.38, 0.66, 0.44);
+  /* --- 首 + 頭（右上に伸びる）--- */
+  const neck = sdSegment(x, y, 0.55, 0.46, 0.76, 0.36, 0.018);
+  const headTri = sdTriangle(x, y, 0.74, 0.32, 0.83, 0.36, 0.76, 0.4);
+  const beak = sdSegment(x, y, 0.83, 0.36, 0.92, 0.34, 0.005);
 
-  // --- 尾 ---
-  const tail = sdTriangle(x, y, 0.43, 0.5, 0.28, 0.6, 0.4, 0.55);
+  /* --- 尾（左下に伸びる三角）--- */
+  const tail = sdTriangle(x, y, 0.45, 0.5, 0.18, 0.66, 0.42, 0.6);
 
-  // --- 左翼 ---
-  const lwTipX = 0.22;
-  const lwTipY = wingY - 0.22 * wingOpen;
+  /* --- 左翼（大きく広がる三角）--- */
+  const lwTipX = 0.10;
+  const lwTipY = wingBaseY + wingTipDy;
   const leftWing = sdTriangle(
-    x,
-    y,
-    0.5,
-    wingY,
-    lwTipX,
-    lwTipY,
-    0.44,
-    wingY + 0.04,
+    x, y,
+    0.5, wingBaseY,
+    lwTipX, lwTipY,
+    0.42, wingBaseY + 0.06,
   );
 
-  // --- 右翼 ---
-  const rwTipX = 0.78;
-  const rwTipY = wingY - 0.2 * wingOpen;
+  /* --- 右翼 --- */
+  const rwTipX = 0.90;
+  const rwTipY = wingBaseY + wingTipDy * 0.9;
   const rightWing = sdTriangle(
-    x,
-    y,
-    0.5,
-    wingY,
-    rwTipX,
-    rwTipY,
-    0.56,
-    wingY + 0.04,
+    x, y,
+    0.5, wingBaseY,
+    rwTipX, rwTipY,
+    0.58, wingBaseY + 0.06,
   );
 
-  let d = Math.min(body, neck);
+  /* --- 合成 --- */
+  let d = body;
+  d = Math.min(d, neck);
   d = Math.min(d, headTri);
+  d = Math.min(d, beak);
   d = Math.min(d, tail);
   d = Math.min(d, leftWing);
   d = Math.min(d, rightWing);
 
-  let brightness = sdfToBrightness(d, 0.012, 6);
+  let b = sdfToBrightness(d);
 
-  // --- 翼の折り目（内部の線）---
-  if (leftWing <= 0.008 && leftWing > -0.05) {
-    const fold = sdSegment(x, y, 0.5, wingY, lwTipX + 0.04, lwTipY + 0.05, 0.002);
-    brightness = Math.max(brightness, sdfToBrightness(fold, 0.004, 12) * 0.55);
+  /* --- 翼の折り目（明部の線で強調）--- */
+  if (leftWing <= 0.005) {
+    const fold = sdSegment(x, y, 0.5, wingBaseY, lwTipX + 0.06, lwTipY + 0.07, 0.003);
+    if (fold < 0.003) b = Math.max(b, 0.85);
   }
-  if (rightWing <= 0.008 && rightWing > -0.05) {
-    const fold = sdSegment(x, y, 0.5, wingY, rwTipX - 0.04, rwTipY + 0.05, 0.002);
-    brightness = Math.max(brightness, sdfToBrightness(fold, 0.004, 12) * 0.55);
+  if (rightWing <= 0.005) {
+    const fold = sdSegment(x, y, 0.5, wingBaseY, rwTipX - 0.06, rwTipY + 0.07, 0.003);
+    if (fold < 0.003) b = Math.max(b, 0.85);
   }
 
-  return brightness;
+  return b;
 };
 
 export default crane;
