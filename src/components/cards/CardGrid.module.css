@@ -13,10 +13,38 @@
   padding-bottom: clamp(20px, 3vh, 32px);
 }
 
+.shuffleBtn {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: #9b9590;
+  background: transparent;
+  border: 0;
+  padding: 6px 4px;
+  cursor: pointer;
+  transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  text-transform: none;
+}
+
+.shuffleBtn:hover,
+.shuffleBtn:focus-visible {
+  color: #2d2b28;
+  outline: none;
+}
+
+.shuffleBtn:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
+}
+
+.hiddenCards .gridCell {
+  visibility: hidden;
 }
 
 @media (max-width: 900px) {
