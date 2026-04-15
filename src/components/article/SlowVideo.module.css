@@ -5,6 +5,47 @@
   overflow: hidden;
   background: #efece7;
   filter: brightness(0.95);
+
+  /*
+   * 四辺をフェザーして記事と映像の境界を曖昧にする。
+   * 上下方向を強めにフェード（文字と隣接するため）、
+   * 左右は控えめ（bleed を生かす）。
+   * 2枚のマスクを重ねて交差部分だけが不透明になる。
+   */
+  --fade-v: 14%;
+  --fade-h: 8%;
+  -webkit-mask-image:
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 var(--fade-v),
+      #000 calc(100% - var(--fade-v)),
+      transparent 100%
+    ),
+    linear-gradient(
+      to right,
+      transparent 0%,
+      #000 var(--fade-h),
+      #000 calc(100% - var(--fade-h)),
+      transparent 100%
+    );
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 var(--fade-v),
+      #000 calc(100% - var(--fade-v)),
+      transparent 100%
+    ),
+    linear-gradient(
+      to right,
+      transparent 0%,
+      #000 var(--fade-h),
+      #000 calc(100% - var(--fade-h)),
+      transparent 100%
+    );
+  mask-composite: intersect;
 }
 
 .video {
@@ -37,5 +78,7 @@
     width: calc(100% + 2 * 12px);
     margin-left: -12px;
     margin-right: -12px;
+    --fade-v: 12%;
+    --fade-h: 6%;
   }
 }
