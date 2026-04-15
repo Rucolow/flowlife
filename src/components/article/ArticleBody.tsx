@@ -1,22 +1,26 @@
 import Link from "next/link";
 import SlowVideo from "./SlowVideo";
+import type { ArticleVideo } from "@/data/articles";
 import styles from "./ArticleBody.module.css";
 
 export interface ArticleBodyProps {
-  /**
-   * 段落テキスト（未指定時はプレースホルダーを使用）。
-   * 映像の挿入位置は後続ステップで content/ のデータから決定する。
-   */
+  /** 段落テキスト。未指定時はプレースホルダーを使用。 */
   paragraphs?: string[];
+  /**
+   * 本文に挿入するスロー映像。最大 2 本まで使用。
+   * - videos[0]: 最初の 3 段落のあとに挿入（既定 aspect 16/9）
+   * - videos[1]: 次の 3 段落のあとに挿入（既定 aspect 21/9）
+   * - 足りない場合はプレースホルダー（グラデーション + "slow motion" ラベル）が表示される
+   */
+  videos?: ArticleVideo[];
 }
 
 /**
  * 本文レイアウト: 3段落 → 映像 → 3段落 → 映像 → return link。
- * テキストは人間が用意するまでのプレースホルダー。
+ * テキスト・映像は人間が用意するまでプレースホルダー表示。
  */
-export default function ArticleBody({ paragraphs }: ArticleBodyProps) {
+export default function ArticleBody({ paragraphs, videos }: ArticleBodyProps) {
   const paras = paragraphs ?? PLACEHOLDER_PARAGRAPHS;
-  // 3 + video + 3 + video の構成。段落が足りなければフォールバックで埋める。
   const filled = [...paras];
   while (filled.length < 6) {
     filled.push(PLACEHOLDER_PARAGRAPHS[filled.length % PLACEHOLDER_PARAGRAPHS.length]);
@@ -24,6 +28,8 @@ export default function ArticleBody({ paragraphs }: ArticleBodyProps) {
 
   const first = filled.slice(0, 3);
   const second = filled.slice(3, 6);
+  const v1 = videos?.[0];
+  const v2 = videos?.[1];
 
   return (
     <div className={styles.body}>
@@ -32,13 +38,21 @@ export default function ArticleBody({ paragraphs }: ArticleBodyProps) {
           {p}
         </p>
       ))}
-      <SlowVideo aspect="16 / 9" />
+      <SlowVideo
+        src={v1?.src}
+        aspect={v1?.aspect ?? "16 / 9"}
+        ariaLabel={v1?.ariaLabel}
+      />
       {second.map((p, i) => (
         <p key={`b-${i}`} className={styles.paragraph}>
           {p}
         </p>
       ))}
-      <SlowVideo aspect="21 / 9" />
+      <SlowVideo
+        src={v2?.src}
+        aspect={v2?.aspect ?? "21 / 9"}
+        ariaLabel={v2?.ariaLabel}
+      />
       <div className={styles.end}>
         <div className={styles.endLine} aria-hidden="true" />
         <Link href="/hiroshima" className={styles.endLink}>

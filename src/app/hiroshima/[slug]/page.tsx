@@ -36,7 +36,7 @@ export default async function ArticlePage({
     <main className={styles.main}>
       <Header />
       <ArticleHero article={article} />
-      <ArticleBody />
+      <ArticleBody videos={article.videos} />
     </main>
   );
 }
