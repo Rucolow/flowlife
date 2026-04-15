@@ -115,8 +115,8 @@ function sampleCardParticles(
       const charIdx = Math.floor(br * (CHARS.length - 1));
       if (charIdx <= 0) continue;
       const char = CHARS[charIdx];
-      const intensity = br * br;
-      const alpha = (0.1 + br * 0.9) * intensity;
+      // Keep in sync with AsciiCanvas: alpha = 0.1 + br * 0.9.
+      const alpha = 0.1 + br * 0.9;
       if (alpha <= 0.02) continue;
       out.push({
         char,

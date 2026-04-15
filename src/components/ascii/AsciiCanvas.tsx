@@ -159,9 +159,10 @@ export default function AsciiCanvas({
           const charIdx = Math.floor(b * (CHARS.length - 1));
           if (charIdx <= 0) continue;
           const ch2 = CHARS[charIdx];
-          const intensity = b * b;
-          const alpha = (0.1 + b * 0.9) * intensity;
-          if (alpha <= 0.01) continue;
+          // design-spec: エッジでアルファ 0.15〜0.3、中心で 0.8〜1.0。
+          // brightness を直接アルファに線形マップする。
+          const alpha = 0.1 + b * 0.9;
+          if (alpha <= 0.02) continue;
           ctx.fillStyle = `rgba(${baseR},${baseG},${baseB},${alpha.toFixed(3)})`;
           ctx.fillText(ch2, x * cw + cw / 2, y * ch + ch / 2);
         }
