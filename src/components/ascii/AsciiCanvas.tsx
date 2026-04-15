@@ -159,12 +159,11 @@ export default function AsciiCanvas({
           const charIdx = Math.floor(b * (CHARS.length - 1));
           if (charIdx <= 0) continue;
           const ch2 = CHARS[charIdx];
-          // シンプルに brightness を alpha にマップ:
+          // brightness をそのままアルファに使う:
           //  motif が 0 を返したセルは上で reject 済み。
-          //  0.3 (エッジ) → α 0.27、0.6 → α 0.54、0.85 (中心) → α 0.77、
-          //  1.0 (highlight) → α 0.9
-          const alpha = b * 0.9;
-          if (alpha <= 0.02) continue;
+          //  0.5 (エッジ) → α 0.5、0.9 (内部 SOLID) → α 0.9
+          const alpha = b;
+          if (alpha <= 0.05) continue;
           ctx.fillStyle = `rgba(${baseR},${baseG},${baseB},${alpha.toFixed(3)})`;
           ctx.fillText(ch2, x * cw + cw / 2, y * ch + ch / 2);
         }

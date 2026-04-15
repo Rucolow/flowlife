@@ -132,11 +132,11 @@ export function sdTriangle(
 
 /**
  * SDFの距離値を明度(0-1)に変換する。
- * 段階化された4レベルで、ASCII の文字階調と相性が良い:
- *   d > 0.01   : 0    （形の外。描画しない）
- *   d > -0.005 : 0.3  （エッジ。細い輪郭）
- *   d > -0.03  : 0.6  （外縁部。中程度）
- *   それ以下   : 0.85 （内部。はっきり）
+ * 内部は SOLID、エッジは細い帯のみ — シルエットを即座に読み取れる。
+ *
+ *   d > 0.01    : 0    （形の外。描画しない）
+ *   d > -0.004  : 0.5  （細いエッジ帯。輪郭線として薄く表示）
+ *   それ以下    : 0.9  （内部 SOLID。文字が密に並んで形を埋める）
  *
  * edge / depthScale は互換性のため残してあるが、現在は無視される。
  */
@@ -148,9 +148,8 @@ export function sdfToBrightness(
   void _edge;
   void _depthScale;
   if (d > 0.01) return 0;
-  if (d > -0.005) return 0.3;
-  if (d > -0.03) return 0.6;
-  return 0.85;
+  if (d > -0.004) return 0.5;
+  return 0.9;
 }
 
 export function opUnion(a: number, b: number): number {
